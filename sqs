@@ -1,0 +1,43 @@
+#!/bin/bash
+
+function list {
+  aws sqs list-queues | jq '.QueueUrls | to_entries[].value' | sed -e 's:^"::g' -e 's:"$::g'
+}
+
+function new {
+  aws sqs create-queue --queue-name "'$1'"
+}
+
+function filter {
+  aws sqs list-queues | jq '.QueueUrls | to_entries[].value | select(contains("'$1'"))' | sed -e 's:^"::g' -e 's:"$::g'
+}
+
+function peek {
+  # peeks at the first message from queue-url found with given string using filter
+
+  # NOTE: that it might trigger the message visibility thing, which causes next 
+  # peek to see the next message in the queue
+  aws sqs receive-message --queue-url "$(filter $1)"
+}
+
+function pull {
+  # fetches one message and deletes from first queue-url found with given string using filter
+  local qurl="$(filter $1)"
+  local res=$(aws sqs receive-message --queue-url $qurl)
+  if [[ -z $res ]]
+  then
+   return
+  else
+   local handle=$(echo $res | jq '.Messages[].ReceiptHandle' | sed -e 's:^"::g' -e 's:"$::g' )
+   local rem=$(aws sqs delete-message --queue-url $qurl --receipt-handle $handle)
+   echo "$res"
+   echo "$rem"
+  fi
+}
+
+function push {
+  # fetches from first queue-url found with given string using filter
+  aws sqs send-message --queue-url "$(filter $1)" --message-body "${@:2}"
+}
+
+echo "$($@)"
