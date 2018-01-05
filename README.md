@@ -12,7 +12,7 @@ https://eu-west-1.queue.amazonaws.com/123412341234/s3ObjectCreate
 https://eu-west-1.queue.amazonaws.com/123412341234/tmpQueue
 
 [eythor@eythor-ws ~]$ sqs filter tmp
-https://eu-west-1.queue.amazonaws.com/464786217001/tmpQueue
+https://eu-west-1.queue.amazonaws.com/123412341234/tmpQueue
 
 [eythor@eythor-ws ~]$ sqs push tmp 'hello world'
 {                                                                                                                             
