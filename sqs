@@ -5,7 +5,7 @@ function list {
 }
 
 function new {
-  aws sqs create-queue --queue-name "'$1'"
+  aws sqs create-queue --queue-name "$1"
 }
 
 function filter {
@@ -37,7 +37,9 @@ function pull {
 
 function push {
   # fetches from first queue-url found with given string using filter
-  aws sqs send-message --queue-url "$(filter $1)" --message-body "${@:2}"
+  local msg_body="${@:2}"
+  echo Pushing $msg_body
+  aws sqs send-message --queue-url "$(filter $1)" --message-body "$msg_body"
 }
 
 echo "$($@)"
