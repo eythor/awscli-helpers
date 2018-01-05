@@ -8,8 +8,16 @@ function new {
   aws sqs create-queue --queue-name "$1"
 }
 
+function delete {
+  aws sqs delete-queue --queue-url "$(filter $1)"
+}
+
 function filter {
   aws sqs list-queues | jq '.QueueUrls | to_entries[].value | select(contains("'$1'"))' | sed -e 's:^"::g' -e 's:"$::g'
+}
+
+function purge {
+  aws sqs purge-queue --queue-url "$(filter $1)"
 }
 
 function peek {
