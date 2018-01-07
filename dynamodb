@@ -1,0 +1,12 @@
+#!/bin/bash
+endpoint="http://localhost:8000"
+
+function list {
+  aws dynamodb list-tables --endpoint-url $endpoint | jq '.TableNames[]' | sed -e 's:^"::g' -e 's:"$::g'
+}
+
+function describe {
+  aws dynamodb describe-table --table-name $1 --endpoint-url $endpoint
+}
+
+echo "$($@)"
