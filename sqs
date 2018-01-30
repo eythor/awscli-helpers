@@ -1,11 +1,14 @@
 #!/bin/bash
-
 function list {
   aws sqs list-queues | jq '.QueueUrls | to_entries[].value' | sed -e 's:^"::g' -e 's:"$::g'
 }
 
 function new {
   aws sqs create-queue --queue-name "$1"
+}
+
+function info {
+  aws sqs get-queue-attributes --attribute-names All --queue-url "$(filter $1)"
 }
 
 function delete {
