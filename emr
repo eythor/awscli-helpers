@@ -29,6 +29,7 @@ function get-id {
 
 # some common jq filter
 function list-recent { list | jq -s "sort_by(.Created) | reverse | .[0:${1:-5}] | .[]"; }
+function list-active { list-waiting; } # common typo for me
 function list-waiting { list | jq 'select(.Status=="WAITING")'; }
 function list-terminating { list | jq 'select(.Status=="TERMINATING")'; }
 function list-bootstrapping { list | jq 'select(.Status=="BOOTSTRAPPING")'; }
