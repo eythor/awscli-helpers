@@ -1,5 +1,10 @@
 #!/bin/bash
 
+function filter {
+  aws emr list-clusters \
+  | jq ".Clusters[] | select(.Name | contains(\"$1\")) | {Name:.Name, Id:.Id}"
+}
+
 function list {
   aws emr list-clusters \
   | jq ".Clusters[] | {
@@ -8,22 +13,6 @@ function list {
                 Status:.Status.State,
                 Created:.Status.Timeline.CreationDateTime | todate
               }"
-}
-
-function list-waiting {
-  list | jq 'select(.Status=="WAITING")'
-}
-function list-terminated {
-  list | jq 'select(.Status=="TERMINATED")'
-}
-function list-bootstrapping {
-  list | jq 'select(.Status=="BOOTSTRAPPING")'
-}
-function list-starting {
-  list | jq 'select(.Status=="STARTING")'
-}
-function list-recent {
-  list | jq -s "sort_by(.Created) | reverse | .[0:${1:-5}] | .[]"
 }
 
 function info {
@@ -35,17 +24,16 @@ function terminate {
 }
 
 function get-id {
-  "$(filter $1 | jq -r '.Id')"
+  echo "$(filter $1 | jq -r '.Id')"
 }
 
-function filter {
-  aws emr list-clusters \
-  | jq ".Clusters[] | select(.Status.State == \"WAITING\") | select(.Name | contains(\"$1\")) | {Name:.Name, Id:.Id}"
-}
+# some common jq filter
+function list-recent { list | jq -s "sort_by(.Created) | reverse | .[0:${1:-5}] | .[]"; }
+function list-waiting { list | jq 'select(.Status=="WAITING")'; }
+function list-terminating { list | jq 'select(.Status=="TERMINATING")'; }
+function list-bootstrapping { list | jq 'select(.Status=="BOOTSTRAPPING")'; }
+function list-starting { list | jq 'select(.Status=="STARTING")'; }
 
-function purge {
-  aws sqs purge-queue --queue-url "$(filter $1)"
-}
 
 echo "$($@)"
 
