@@ -5,6 +5,14 @@ function list {
   aws dynamodb list-tables --endpoint-url $endpoint | jq '.TableNames[]' | sed -e 's:^"::g' -e 's:"$::g'
 }
 
+function insert {
+  echo $3
+  aws dynamodb put-item --endpoint-url $endpoint --table-name $1 --item file://$2
+}
+function create {
+  aws dynamodb create-table --endpoint-url $endpoint --cli-input-json file://$1
+}
+
 function describe {
   aws dynamodb describe-table --table-name $1 --endpoint-url $endpoint
 }

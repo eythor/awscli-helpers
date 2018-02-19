@@ -1,0 +1,51 @@
+#!/bin/bash
+
+function list {
+  aws emr list-clusters \
+  | jq ".Clusters[] | {
+                Name:.Name,
+                Id:.Id,
+                Status:.Status.State,
+                Created:.Status.Timeline.CreationDateTime | todate
+              }"
+}
+
+function list-waiting {
+  list | jq 'select(.Status=="WAITING")'
+}
+function list-terminated {
+  list | jq 'select(.Status=="TERMINATED")'
+}
+function list-bootstrapping {
+  list | jq 'select(.Status=="BOOTSTRAPPING")'
+}
+function list-starting {
+  list | jq 'select(.Status=="STARTING")'
+}
+function list-recent {
+  list | jq -s "sort_by(.Created) | reverse | .[0:${1:-5}] | .[]"
+}
+
+function info {
+  aws emr describe-cluster --cluster-id "$(get-id $1)"
+}
+
+function terminate {
+  aws emr terminate-clusters --cluster-ids "$(get-id $1)"
+}
+
+function get-id {
+  "$(filter $1 | jq -r '.Id')"
+}
+
+function filter {
+  aws emr list-clusters \
+  | jq ".Clusters[] | select(.Status.State == \"WAITING\") | select(.Name | contains(\"$1\")) | {Name:.Name, Id:.Id}"
+}
+
+function purge {
+  aws sqs purge-queue --queue-url "$(filter $1)"
+}
+
+echo "$($@)"
+
