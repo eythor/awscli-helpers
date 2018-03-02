@@ -23,6 +23,10 @@ function terminate {
   aws emr terminate-clusters --cluster-ids "$(get-id $1)"
 }
 
+function nodes {
+  aws emr list-instances --cluster-id "$(get-id $1)"
+}
+
 function get-id {
   echo "$(filter $1 | jq -r '.Id')"
 }
